@@ -1,0 +1,63 @@
+%% 
+
+clear 
+clc
+close all
+
+%% Initialisation 
+
+% Data of the Earth
+R_Earth = 6371e3;     % Radius of the Earth (km)
+GM = 3.986004418e14;  % m^3 s^(-2)
+earth = Earth(R_Earth, GM); 
+
+
+% Initial states 
+r0 = 120e3;         % initial radial distance (m)
+v0 = 7200;          % initial velocity (m/s)
+
+% Initial latitude and longitude
+lat0 = asin(0);     % Cubesat starts from the Equator 
+lon0 = 0;           % Cubesat starts from the Prime Meridian
+
+% Convert polar coordinates to Caresian components 
+[x0, y0, z0] = earth.cartesian(lat0,lon0,r0); 
+[vx0,vy0,vz0] = earth.cartesian(lat0,lon0,v0);
+
+% Time span
+tspan = [0, 1000];  % Time span in seconds
+
+% Initial state vector
+initial_state = [x0, y0, z0, vx0, vy0, vz0];
+
+%% Solver 
+% Solve the system of equations
+[t, state] = ode45(@motion_eqns, tspan, initial_state);
+
+
+%% Results 
+% Extract the state variables
+x = state(:, 1);
+y = state(:, 2);
+z = state(:, 3);
+vx = state(:, 4);
+vy = state(:, 5);
+vz = state(:, 6);
+
+% Convert the state variables to polar coordinates
+[lat, lon, alt] = earth.polar(x,y,z); 
+[vx,vy0,vz0] = earth.polar(vx,vy,vz);
+
+
+% Plot the results
+figure;
+plot3(tspan, alt);
+xlabel('Time (s)');
+ylabel('Altitude (m)');
+title('Spacecraft Trajectory');
+grid on;
+
+
+
+
+    
